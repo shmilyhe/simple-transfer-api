@@ -21,6 +21,14 @@ public class Server {
 		// TODO Auto-generated method stub
 		try {
 			new Server(3000,new TestServerHandler(),new SimpleProtocol(),4);
+			System.out.println("服务端启动成功");
+			while(true)
+				try {
+					Thread.sleep(5000);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -88,10 +96,17 @@ public class Server {
 							lock.loop++;
 						}
 						ClientWorker w =clientList.get(loop);
-						if(!w.work())
+						/**
+						 * 当工作任务不在执行时，启动任务。（这里使用同步是用了双确认，以保证效率）
+						 * 当启动任务但，任务中没有数据处理时 闲置计数器加1
+						 */
+						if(!w.isWorking()&&!w.work())
 							try {
 								//System.out.println("sleep");
 								eCount++;
+								/**
+								 * 当连续闲置任务超50时，睡一下
+								 */
 								if(eCount>=50){
 									Thread.sleep(1);
 									eCount=0;
