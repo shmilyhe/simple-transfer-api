@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.List;
 
 import com.eshore.socketapi.commons.Action;
 import com.eshore.socketapi.commons.IProtocol;
@@ -16,6 +17,7 @@ import com.eshore.socketapi.commons.SimpleProtocol;
  */
 public class Server {
 	 ArrayList<ClientWorker> clientList= new ArrayList<ClientWorker>();
+	 int changeCount=0;
 	 int loop=0;
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
@@ -34,6 +36,36 @@ public class Server {
 			e.printStackTrace();
 		}
 	}
+	
+	private static ArrayList<ClientWorker> removeNotavailable(List<ClientWorker>  list){
+		ArrayList<ClientWorker>list2 = new ArrayList<ClientWorker>();
+		for(ClientWorker w:list){
+			if(w.isAvailable())list2.add(w);
+			else{
+				System.out.println("client exit ! ip:"+w.ip+":"+w.port);
+			}
+		}
+		return list2;
+	}
+	
+	public void dropOneClient(){
+		//System.out.println("dropOneClient");
+		changeCount++;
+	}
+	
+	
+	/**
+	 * 更新worker列表
+	 */
+	private void updateWorkerList(){
+		try{
+			ArrayList<ClientWorker>list2 =removeNotavailable(clientList);
+			System.out.println("共回收"+(clientList.size()-list2.size())+"个线接！"+changeCount);
+			changeCount=0;
+			clientList=list2;
+		}catch(Exception e){}
+	}
+	
 	
 	/**
 	 * 通知客户端
@@ -54,13 +86,19 @@ public class Server {
 	 */
 	public Server(int port,final ServerHandler hadler,final IProtocol p, int wokerSize) throws IOException{
 		final ServerSocket s = new ServerSocket(port);
+		final Server _this=this;
 		Thread accepter = new Thread(){
 			public void run(){
 				while(true){
 					Socket socket;
 					try {
 						socket = s.accept();
-						clientList.add(new ClientWorker(socket,hadler,p));
+						System.out.println("worker:"+clientList.size()+" change:"+changeCount);
+						//当客户端断线超过阀值时回收 断线的客户对worker
+						if(_this.changeCount>10){
+							_this.updateWorkerList();
+						}
+						clientList.add(new ClientWorker(socket,hadler,p,_this));
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
@@ -100,7 +138,8 @@ public class Server {
 						 * 当工作任务不在执行时，启动任务。（这里使用同步是用了双确认，以保证效率）
 						 * 当启动任务但，任务中没有数据处理时 闲置计数器加1
 						 */
-						if(!w.isWorking()&&!w.work())
+						if(!w.isWorking())
+						if(!w.work())
 							try {
 								//System.out.println("sleep");
 								eCount++;

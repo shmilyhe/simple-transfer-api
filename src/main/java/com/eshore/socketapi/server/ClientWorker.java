@@ -13,6 +13,7 @@ import com.eshore.socketapi.commons.IProtocol;
  *
  */
 public class ClientWorker {
+	Server server;
 	String ip;
 	InputStream in;
 	OutputStream out;
@@ -27,8 +28,10 @@ public class ClientWorker {
 	 * @param s 对端的socket
 	 * @param h 业务处理handler
 	 * @param protocol 传输协议
+	 * @param server server 的反引用
 	 */
-	public ClientWorker(Socket s,ServerHandler h,IProtocol protocol){
+	public ClientWorker(Socket s,ServerHandler h,IProtocol protocol,Server server){
+		this.server=server;
 		this.s=s;
 		this.protocol=protocol;
 		serverHandler=h;
@@ -42,13 +45,25 @@ public class ClientWorker {
 			e.printStackTrace();
 		}
 	}
+	static Action ping=new Action("ping","ping",null);
 	
 	/**
 	 * 当前worker 是否可用
 	 * @return
 	 */
 	public boolean isAvailable() {
+		if(s==null)return false;
+		if(s.isClosed())return false;
 		return available;
+	}
+	
+	/**
+	 * 关闭并释放资源
+	 */
+	public void close(){
+		try {in.close();} catch (IOException e) {}
+		try {out.close();} catch (IOException e) {}
+		try {s.close();} catch (IOException e) {}
 	}
 
 
@@ -78,33 +93,68 @@ public class ClientWorker {
 		return true;
 	}
 	
+	private final synchronized boolean toggleWork(boolean t){
+		if(working==true){
+			if(t==true)return false;
+			else{
+				working=false;
+				return false;
+			}
+		}else{
+			if(t==true){
+				working=true;
+				return true;
+			}else{
+				return false;
+			}
+		}
+	}
+	static long FREQ_OF_PING=10000;
+	
+	long lastPing=0;
+	private boolean pingClient(){
+		long t =System.currentTimeMillis();
+		if(t-lastPing<FREQ_OF_PING)return true;
+		try {
+			protocol.write(out, ping);
+			lastPing=t;
+			return true;
+		} catch (IOException e) {
+			return false;
+		}
+	}
+	
 	/**
 	 * 处理接收的数据
 	 * @return
 	 */
-	public synchronized boolean  work(){
-		working=true;
-		if(!available||s.isClosed()){
+	public  boolean  work(){
+		if(!toggleWork(true))return false;
+		//working=true;
+		if(!available||s.isClosed()||!pingClient()){
+			if(available==true)server.dropOneClient();
 			available=false;
-			working=false;
+			toggleWork(false);
+			//working=false;
 			return false;
 		}
 		try {
 			int av =in.available();
 			if(av<=0){
-				working=false;
+				toggleWork(false);
 				return false;
 			}
 			//System.out.println("work av:"+av);
 			Action a =protocol.read(in);
 			Action response =serverHandler.handle(a,this);
 			if(response!=null)protocol.write(out, response);
-			working=false;
+			toggleWork(false);
 			return true;
 		} catch (IOException e) {
 			available=false;
 			e.printStackTrace();
-			working=false;
+			toggleWork(false);
+			server.dropOneClient();
 			return false;
 		}
 		

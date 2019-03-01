@@ -45,4 +45,8 @@ public class CallBackPool {
 		}
 		list.add(worker);
 	}
+	
+	/**
+	 * 欠订阅列表回收机制....
+	 */
 }

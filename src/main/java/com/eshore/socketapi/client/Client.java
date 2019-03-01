@@ -94,19 +94,37 @@ public class Client {
 	
 	
 	public static void main(String agrs[]) throws UnknownHostException, IOException{
-		Client c = new Client("127.0.0.1",3000,new SimpleProtocol());
-		Client c2 = new Client("127.0.0.1",3000,new SimpleProtocol());
-		Client c3 = new Client("127.0.0.1",3000,new SimpleProtocol());
-		Client c4 = new Client("127.0.0.1",3000,new SimpleProtocol());
-		long bt = System.currentTimeMillis();
-		c.logon("9090ooooooooooooo0");
-		
-		c.logon("9090ooooooo090909oooooo0");
-		for(int i=0;i<1000;i++)
-			c.logon("==================");
-			c2.logon("00000000000000000000");
-			c3.logon("00000000000000000000");
-			c4.logon("00000000000000000000");
-		System.out.println(System.currentTimeMillis()-bt);
+		{
+			Client c = new Client("127.0.0.1",3000,new SimpleProtocol());
+			Client c2 = new Client("127.0.0.1",3000,new SimpleProtocol());
+			Client c3 = new Client("127.0.0.1",3000,new SimpleProtocol());
+			Client c4 = new Client("127.0.0.1",3000,new SimpleProtocol());
+			long bt = System.currentTimeMillis();
+			c.logon("9090ooooooooooooo0");
+			
+			c.logon("9090ooooooo090909oooooo0");
+			for(int i=0;i<1000;i++)
+				c.logon("==================");
+				c2.logon("00000000000000000000");
+				c3.logon("00000000000000000000");
+				c4.logon("00000000000000000000");
+			System.out.println(System.currentTimeMillis()-bt);
+		}
+		{
+			Client c = new Client("127.0.0.1",3000,new SimpleProtocol());
+			Client c2 = new Client("127.0.0.1",3000,new SimpleProtocol());
+			Client c3 = new Client("127.0.0.1",3000,new SimpleProtocol());
+			Client c4 = new Client("127.0.0.1",3000,new SimpleProtocol());
+			long bt = System.currentTimeMillis();
+			c.logon("9090ooooooooooooo0");
+			
+			c.logon("9090ooooooo090909oooooo0");
+			for(int i=0;i<1000;i++)
+				c.logon("==================");
+				c2.logon("00000000000000000000");
+				c3.logon("00000000000000000000");
+				c4.logon("00000000000000000000");
+			System.out.println(System.currentTimeMillis()-bt);
+		}
 	}
 }
