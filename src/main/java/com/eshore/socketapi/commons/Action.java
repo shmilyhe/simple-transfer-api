@@ -10,13 +10,15 @@ import java.util.Map;
  */
 
 public class Action {
-	private String removeIp;
-	private String action;
-	private String token;
-	private byte datas[];
-	private Map ext=new HashMap();
+	private String removeIp;//对端IP
+	private String action;//事件名称
+	private String token;//权限令牌，做权限认证时
+	private byte datas[];//传输的数据
+	private Map ext=new HashMap();//额外的属性
 	
-	
+	/**
+	 * 
+	 */
 	public Action(){}
 	
 	public Action(String action, String token,byte datas[]){
