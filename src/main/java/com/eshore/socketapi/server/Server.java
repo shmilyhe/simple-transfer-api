@@ -135,12 +135,16 @@ public class Server {
 							}
 							lock.loop++;
 						}
-						ClientWorker w =clientList.get(loop);
+						
+						ClientWorker w =null;
+						try{
+							w = clientList.get(loop);
+						}catch(Exception e){}
 						/**
 						 * 当工作任务不在执行时，启动任务。（这里使用同步是用了双确认，以保证效率）
 						 * 当启动任务但，任务中没有数据处理时 闲置计数器加1
 						 */
-						if(!w.isWorking())
+						if(w!=null&&!w.isWorking())
 						if(!w.work())
 							try {
 								//System.out.println("sleep");
