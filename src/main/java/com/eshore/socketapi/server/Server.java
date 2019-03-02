@@ -76,6 +76,26 @@ public class Server {
 		CallBackPool.call(id, a);
 	}
 	
+	private Boolean lock=true;
+	
+	public ClientWorker getWorker(){
+		if(clientList==null)return null;
+		int size=clientList.size();
+		if(size==0)return null;
+		int i=0;
+		synchronized (lock) {
+			if(loop>=size){
+				loop=0;
+			}
+			i=loop;
+			loop++;
+		}
+		ClientWorker w =null;
+		try{
+			w = clientList.get(i);
+		}catch(Exception e){}
+		return w;
+	}
 	/**
 	 * 创建服务端
 	 * @param port 监听端口
@@ -110,60 +130,8 @@ public class Server {
 		};
 		accepter.setDaemon(true);
 		accepter.start();
-		final Server lock=this;
 		for(int i=0;i<wokerSize;i++){
-			Thread worker =	new Thread(){
-				public void run(){
-					int eCount=0;
-					while(true){
-						int loop=0;
-						
-						int size=clientList.size();
-						//System.out.println("size:"+size);
-						if(size==0)
-							try {
-								Thread.sleep(500);
-								continue;
-							} catch (InterruptedException e1) {
-								e1.printStackTrace();
-							}
-						synchronized (lock) {
-							loop=lock.loop;
-							if(loop>=size){
-								loop=0;
-								lock.loop=0;
-							}
-							lock.loop++;
-						}
-						
-						ClientWorker w =null;
-						try{
-							w = clientList.get(loop);
-						}catch(Exception e){}
-						/**
-						 * 当工作任务不在执行时，启动任务。（这里使用同步是用了双确认，以保证效率）
-						 * 当启动任务但，任务中没有数据处理时 闲置计数器加1
-						 */
-						if(w!=null&&!w.isWorking())
-						if(!w.work())
-							try {
-								//System.out.println("sleep");
-								eCount++;
-								/**
-								 * 当连续闲置任务超50时，睡一下
-								 */
-								if(eCount>=50){
-									Thread.sleep(1);
-									eCount=0;
-								}
-							} catch (InterruptedException e) {
-								e.printStackTrace();
-							}else{
-								eCount=0;
-							}
-					}
-				}
-			};
+			WorkerThread worker= new WorkerThread(this);
 			worker.setDaemon(true);
 			worker.start();
 		}
