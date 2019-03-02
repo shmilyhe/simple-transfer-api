@@ -103,28 +103,43 @@ public class Client {
 			c.logon("9090ooooooooooooo0");
 			
 			c.logon("9090ooooooo090909oooooo0");
-			for(int i=0;i<1000;i++)
+			for(int i=0;i<10000;i++){
 				c.logon("==================");
 				c2.logon("00000000000000000000");
 				c3.logon("00000000000000000000");
 				c4.logon("00000000000000000000");
-			System.out.println(System.currentTimeMillis()-bt);
+			}
+			long time=System.currentTimeMillis()-bt;
+			double tps=(40000d/time)*1000;
+			System.out.println("time:"+time+"\t tps:"+tps);
 		}
 		{
 			Client c = new Client("127.0.0.1",3000,new SimpleProtocol());
 			Client c2 = new Client("127.0.0.1",3000,new SimpleProtocol());
 			Client c3 = new Client("127.0.0.1",3000,new SimpleProtocol());
 			Client c4 = new Client("127.0.0.1",3000,new SimpleProtocol());
+			Client c5 = new Client("127.0.0.1",3000,new SimpleProtocol());
+			Client c6 = new Client("127.0.0.1",3000,new SimpleProtocol());
+			Client c7 = new Client("127.0.0.1",3000,new SimpleProtocol());
+			Client c8 = new Client("127.0.0.1",3000,new SimpleProtocol());
 			long bt = System.currentTimeMillis();
 			c.logon("9090ooooooooooooo0");
 			
 			c.logon("9090ooooooo090909oooooo0");
-			for(int i=0;i<1000;i++)
+			for(int i=0;i<10000;i++){
 				c.logon("==================");
 				c2.logon("00000000000000000000");
 				c3.logon("00000000000000000000");
 				c4.logon("00000000000000000000");
-			System.out.println(System.currentTimeMillis()-bt);
+				c5.logon("==================");
+				c6.logon("00000000000000000000");
+				c7.logon("00000000000000000000");
+				c8.logon("00000000000000000000");
+			}
+			long time=System.currentTimeMillis()-bt;
+			double tps=(80000d/time)*1000;
+			System.out.println("time:"+time+"\t tps:"+tps);
 		}
+		
 	}
 }

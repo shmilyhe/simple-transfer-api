@@ -97,6 +97,8 @@ public class Server {
 						//当客户端断线超过阀值时回收 断线的客户对worker
 						if(_this.changeCount>10){
 							_this.updateWorkerList();
+							//启动回收订阅机制
+							CallBackPool.startRecycleWorker();
 						}
 						clientList.add(new ClientWorker(socket,hadler,p,_this));
 					} catch (IOException e) {

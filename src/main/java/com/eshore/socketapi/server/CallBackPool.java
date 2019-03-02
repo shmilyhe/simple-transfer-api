@@ -1,9 +1,13 @@
 package com.eshore.socketapi.server;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import com.eshore.socketapi.commons.Action;
 /**
@@ -13,6 +17,7 @@ import com.eshore.socketapi.commons.Action;
  */
 public class CallBackPool {
 	public static Map<String,List> workerMap = new HashMap<String,List> ();
+	public static Set<String> subscribeSet =new HashSet<String>();
 	
 	/**
 	 * 调用客户端
@@ -38,15 +43,61 @@ public class CallBackPool {
 	 * @param worker 客户端的引用
 	 */
 	public  static void subscribe(String id,ClientWorker worker){
-		List list = workerMap.get(id);
-		if(list==null){
-			list=new ArrayList();
-			workerMap.put(id, list);
+		synchronized (workerMap) {
+			List list = workerMap.get(id);
+			if(list==null){
+				list=new ArrayList();
+				workerMap.put(id, list);
+			}
+			list.add(worker);
 		}
-		list.add(worker);
+		
 	}
 	
 	/**
-	 * 欠订阅列表回收机制....
+	 * 启动回收机制
 	 */
+	public static void startRecycleWorker(){
+		Thread t1 =new Thread(){
+			public void run(){
+				 recycleWorker();
+			}
+		};
+		t1.setDaemon(true);
+		t1.start();
+	}
+	
+	/**
+	 * 订阅列表回收机制....
+	 */
+	public static void recycleWorker(){
+		synchronized(workerMap){
+			if(workerMap.isEmpty())return;
+			Set<Entry<String,List>>  es =workerMap.entrySet();
+			if(es==null||es.size()==0)return;
+			int exitCount=0;
+			for(Entry<String,List> e:es){
+				List wl =e.getValue();
+				if(wl==null||wl.isEmpty()){
+					workerMap.remove(e.getKey());
+				}else{
+					List nl=new ArrayList();
+					for(Object o:wl){
+						ClientWorker cw =(ClientWorker)o;
+						if(cw.available){
+							nl.add(cw);
+						}else{
+							exitCount++;
+						}
+					}
+					//当列表有回收时更新
+					if(nl.size()<wl.size()){
+						workerMap.put(e.getKey(), nl);
+					}
+					
+				}
+			}
+			System.out.println("回收"+exitCount+"个订阅连接");
+		}
+	}
 }
