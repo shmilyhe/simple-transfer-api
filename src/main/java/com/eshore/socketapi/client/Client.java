@@ -44,28 +44,77 @@ public class Client {
 	
 	ICallback handle;
 	
+	private long last=System.currentTimeMillis();
+	private void testSubscribe(){
+		if(System.currentTimeMillis()-last<1500){
+			return;
+		}
+		last=System.currentTimeMillis();
+		try{
+			Action a= new Action();
+			a.setAction("test");
+			a.setToken("test");
+			a.addAttribute("wx_id", id);
+			p.write(callbackOut, a);
+		}catch(Exception e){
+			System.out.println("重连");
+			Action a= new Action();
+			a.setAction("subscribe");
+			a.setToken("test");
+			a.addAttribute("wx_id", id);
+			try {
+				
+				callback= new Socket(ip,port);
+				callbackIn=callback.getInputStream();
+				callbackOut=callback.getOutputStream();
+				p.write(callbackOut, a);
+				caller=new DefaultCaller(p,callbackOut);
+				System.out.println("重连成功");
+			} catch (IOException e1) {
+				System.out.println("重连失败");
+				e1.printStackTrace();
+			}
+			
+		}
+	}
+	Caller caller;
+	String id;
 	public void subscribe(String id,String token,final ICallback handle) throws UnknownHostException, IOException{
 		callback= new Socket(ip,port);
 		callbackIn=callback.getInputStream();
 		callbackOut=callback.getOutputStream();
+		this.id=id;
+		caller=new DefaultCaller(p,callbackOut);
 		Action a= new Action();
 		a.setAction("subscribe");
 		a.setToken(token);
 		a.addAttribute("wx_id", id);
 		p.write(callbackOut, a);
 		this.handle=handle;
+		System.out.println("连接成功");
 		Thread th = new Thread(){
 			public void run(){
+				long count=0;
 				while(true){
 					try {
+						if(count++%100==0){
+							System.out.println(count-1);
+						}
 						if(callbackIn.available()>0){
 							Action a = p.read(callbackIn);
 							try{
-								handle.doCallback(a);
+								Action response = handle.doCallback(a);
+								if(response!=null){
+									response.setId(a.getId());
+									caller.Call(response);
+								}
 							}catch(Exception e){}
 						}else{
+							
 							try {
+								testSubscribe();
 								Thread.sleep(50);
+								
 							} catch (InterruptedException e) {
 								e.printStackTrace();
 							}
@@ -75,7 +124,9 @@ public class Client {
 						break;
 					}
 				}
+				System.out.println("exit");
 			}
+			
 		};
 		th.setDaemon(true);
 		th.start();

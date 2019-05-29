@@ -23,6 +23,11 @@ public class TestServerHandler implements ServerHandler {
 			//打印出客户端的 action 字段
 			//System.out.println("[Server] 接收到客服端请求："+a.getAction());
 		}
+		if(a.getId()!=null){
+			Future.done(a);
+			System.out.println("client response:"+a.getId());
+			return null;
+		}
 		//原样回复客户端的数据。
 		//一般需要根据业务构造正确的返回值
 		return a;

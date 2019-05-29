@@ -3,6 +3,8 @@ package com.eshore.socketapi.commons;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.eshore.tools.JsonString;
+
 /**
  * 事件类
  * @author eshore
@@ -10,6 +12,7 @@ import java.util.Map;
  */
 
 public class Action {
+	private String id;
 	private String removeIp;//对端IP
 	private String action;//事件名称
 	private String token;//权限令牌，做权限认证时
@@ -68,6 +71,25 @@ public class Action {
 
 	public void setRemoveIp(String removeIp) {
 		this.removeIp = removeIp;
+	}
+
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
+
+	@Override
+	public String toString() {
+		if(ext==null)ext=new HashMap();
+		ext.put("action", action);
+		ext.put("id", id);
+		if(token!=null){
+			ext.put("token", token);
+		}
+		return JsonString.asJsonString(ext);
 	}
 	
 	

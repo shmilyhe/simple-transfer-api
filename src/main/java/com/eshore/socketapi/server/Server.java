@@ -5,6 +5,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import com.eshore.socketapi.commons.Action;
 import com.eshore.socketapi.commons.IProtocol;
@@ -16,11 +17,11 @@ import com.eshore.socketapi.commons.SimpleProtocol;
  *
  */
 public class Server {
+
 	 ArrayList<ClientWorker> clientList= new ArrayList<ClientWorker>();
 	 int changeCount=0;
 	 int loop=0;
 	public static void main(String[] args) {
-		// TODO Auto-generated method stub
 		try {
 			new Server(3000,new TestServerHandler(),new SimpleProtocol(),4);
 			System.out.println("服务端启动成功");
@@ -60,7 +61,7 @@ public class Server {
 	private void updateWorkerList(){
 		try{
 			ArrayList<ClientWorker>list2 =removeNotavailable(clientList);
-			System.out.println("共回收"+(clientList.size()-list2.size())+"个线接！"+changeCount);
+			System.out.println("共回收"+(clientList.size()-list2.size())+"个连接！"+changeCount);
 			changeCount=0;
 			clientList=list2;
 		}catch(Exception e){}
@@ -74,6 +75,21 @@ public class Server {
 	 */
 	public void callClient(String id,Action a){
 		CallBackPool.call(id, a);
+	}
+	
+	public Action call(String id,Action a){
+		String cid=UUID.randomUUID().toString();
+		a.setId(cid);
+		Future.submit(a);
+		if(CallBackPool.call(id, a)){
+			return Future.get(cid, 3);
+		}else{
+			a.setAction("error");
+			a.setDatas("unreachable".getBytes());
+			a.setExt(null);
+			return a;
+		}
+		
 	}
 	
 	private Boolean lock=true;

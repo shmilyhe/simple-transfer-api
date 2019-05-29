@@ -1,45 +1,42 @@
 package com.eshore;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.UnknownHostException;
 
 import com.eshore.socketapi.client.Client;
+import com.eshore.socketapi.client.ICallback;
+import com.eshore.socketapi.commons.Action;
 import com.eshore.socketapi.commons.SimpleProtocol;
 
 public class Test2 {
 
 	public static void main(String[] args) throws UnknownHostException, IOException {
-		// TODO Auto-generated method stub
-		for(int i=0;i<30;i++){
-			new Thread(){
-				public void run(){
-					Client c;
-					try {
-						long bt=System.currentTimeMillis();
-						c = new Client("127.0.0.1",3000,new SimpleProtocol());
-						for(int i=0;i<1000;i++){
-							c.logon("9090ooooooooooooo0");
-							c.logon("9090ooooooooooooo0");
-						}
-						long et =System.currentTimeMillis();
-						
-						System.out.println((2000d/(et-bt))*1000);
-						
-					} catch (UnknownHostException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-					
-				}
-			}.start();
+		Client c = new Client("70mm.cn",30016,new SimpleProtocol());
 		
-		//System.out.println( );
+		//订阅服务端数据
+		c.subscribe("1890", "token", new ICallback(){
+
+			@Override
+			public Action doCallback(Action a) {
+				try {
+					System.out.println("接收到服务端的主动请求："+a.getAction()+" data:"+new String(a.getDatas(),"utf-8"));
+					a.addAttribute("msg", "我们收到了服务器的消息");
+					return a;
+				} catch (UnsupportedEncodingException e) {
+					e.printStackTrace();
+				}
+				return a;
+			}
+			
+		});
+		while(true)
+		try {
+			Thread.sleep(50000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
-		//System.out.println( c.logon("9090ooooooooooooo0"));
-		//System.out.println( c.logon("9090ooooooooooooo0"));
 
 	}
 

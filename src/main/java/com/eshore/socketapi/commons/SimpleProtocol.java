@@ -20,6 +20,7 @@ public class SimpleProtocol implements IProtocol {
 	static String ACTION="ACTION";
 	static String DATAS="DATAS";
 	static String END="END";
+	static String ID="ID";
 	
 	
 	private  int readUnsignedShort(InputStream in) throws IOException {
@@ -88,6 +89,8 @@ public class SimpleProtocol implements IProtocol {
 					a.setToken( new String(v,"utf-8"));
 				}else if(DATAS.equals(h)){
 					a.setDatas(v);
+				}else if(ID.equals(h)){
+					a.setId(new String(v));
 				}else{
 					a.addAttribute(h, new String(v,"utf-8"));
 				}
@@ -105,11 +108,17 @@ public class SimpleProtocol implements IProtocol {
 	@Override
 	public void write(OutputStream out, Action action)throws IOException {
 		// TODO Auto-generated method stub
-	
+			
 			writeString(out,ACTION);
 			writeString(out,action.getAction());
+			if(action.getToken()!=null){
 			writeString(out,TOKEN);
 			writeString(out,action.getToken());
+			}
+			if(action.getId()!=null){
+				writeString(out,ID);
+				writeString(out,action.getId());
+			}
 			if(action.getDatas()!=null&&action.getDatas().length!=0){
 			 writeString(out,DATAS);
 			 writeBytes(out,action.getDatas());

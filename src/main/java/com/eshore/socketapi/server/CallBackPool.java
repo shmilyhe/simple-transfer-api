@@ -23,18 +23,22 @@ public class CallBackPool {
 	 * 调用客户端
 	 * @param id 客户端订阅的id
 	 * @param a 调用内容
+	 * @return 是否成功
 	 */
-	public static void call(String id, Action a){
+	public static boolean call(String id, Action a){
 		List list =workerMap.get(id);
-		if(list==null||list.size()==0)return;
+		if(list==null||list.size()==0)return false;
+		int count=0;
 		for(Object o:list){
 			ClientWorker w =(ClientWorker)o;
 			try{
 				if(w.available){
 					w.Call(a);
+					count++;
 				}
 			}catch(Exception e){}
 		}
+		return count>0;
 	}
 	
 	/**

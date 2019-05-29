@@ -10,6 +10,7 @@ public interface ICallback {
 	/**
 	 * 
 	 * @param a
+	 * @return return response;
 	 */
-	void doCallback(Action a );
+	Action doCallback(Action a);
 }

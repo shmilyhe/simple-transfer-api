@@ -43,12 +43,15 @@ public class TestClientAndServer {
 			c.subscribe("wx_id12345", "token", new ICallback(){
 
 				@Override
-				public void doCallback(Action a) {
+				public Action doCallback(Action a) {
 					try {
 						System.out.println("接收到服务端的主动请求："+a.getAction()+" data:"+new String(a.getDatas(),"utf-8"));
+						a.addAttribute("msg", "-------");
+						return a;
 					} catch (UnsupportedEncodingException e) {
 						e.printStackTrace();
 					}
+					return null;
 					
 				}
 				
@@ -63,7 +66,8 @@ public class TestClientAndServer {
 				Action a = new Action();
 				a.setAction("call from server");
 				a.setDatas("test send data to client ".getBytes());
-				server.callClient("wx_id12345", a);
+				Action c1= server.call("wx_id12345", a);
+				System.out.println("客户端回复："+c1.getAttribute("msg"));
 				try {
 					Thread.sleep(50);
 				} catch (InterruptedException e) {
